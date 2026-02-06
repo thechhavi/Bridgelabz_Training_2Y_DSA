@@ -1,0 +1,327 @@
+Problem 1: Understanding Recursion Mechanics
+a) Recursive function structure (pseudocode)
+To calculate the total size of a directory, we can use recursion because a directory can contain files as well as other directories.
+Pseudocode:
+function getDirectorySize(item):
+    if item is a file:
+        return size of the file        
+
+    totalSize = 0
+    for each subItem in item:
+    totalSize =totalSize+getDirectorySize(subItem)   
+    return totalSize
+
+Explanation:
+Base Case:
+If the item is a file, return its size directly.
+Recursive Case:
+If the item is a directory, call the same function for each file or subdirectory inside it and add their sizes.
+
+b) Tracing the execution on the given directory structure
+Directory Structure:
+project/
+├── src/
+│   ├── main.java (100 KB)
+│   └── utils.java (50 KB)
+├── docs/
+│   ├── readme.txt (10 KB)
+│   └── guides/
+│       └── setup.pdf (200 KB)
+└── config.xml (20 KB)
+
+Step-by-step call stack and return values:
+getDirectorySize(project)
+calls getDirectorySize(src)
+calls getDirectorySize(main.java) → returns 100 KB
+calls getDirectorySize(utils.java) → returns 50 KB
+src returns 150 KB
+calls getDirectorySize(docs)
+calls getDirectorySize(readme.txt) → returns 10 KB
+calls getDirectorySize(guides)
+calls getDirectorySize(setup.pdf) → returns 200 KB
+guides returns 200 KB
+docs returns 210 KB
+calls getDirectorySize(config.xml) → returns 20 KB
+
+Final Calculation:
+src     = 150 KB
+docs    = 210 KB
+config  = 20 KB
+Total   = 380 KB
+Final Output:
+Total directory size = 380 KB
+
+c) Time complexity of the solution
+The time complexity is O(N), where N is the total number of files and directories.
+Explanation:
+Each file and directory is visited only once.
+The function performs a constant amount of work for every item.
+Therefore, the total time depends on the number of items in the directory structure.
+
+d)Iterative solution and comparison
+Yes, this problem can also be solved iteratively.
+Data Structure Required:
+Stack (or a Queue for BFS)
+Iterative approach idea:
+Push the root directory into a stack.
+
+While the stack is not empty:
+Pop an item.
+If it is a file, add its size.
+If it is a directory, push all its contents into the stack.
+
+Comparison:
+Recursive Approach	       
+Simple and easy to understand.	
+Uses call stack automatically.	
+Risk of stack overflow for deep trees.	
+
+Iterative Approach
+Slightly more complex.
+Uses explicit stack.
+Safer for large structures..
+
+
+e) Handling symbolic links (cycle problem)
+If a symbolic link creates a cycle, the recursive function may go into infinite recursion.
+Example:
+Directory A → links to Directory B
+Directory B → links back to Directory A
+
+Solution:
+We can maintain a set of visited directories.
+Modified Base Case:
+if item is already in visitedSet:
+    return 0
+
+Explanation:
+Before processing a directory, check if it has already been visited.
+If yes, skip it to avoid infinite recursion.
+This ensures the function terminates safely.
+
+Problem 2: Backtracking Template Application
+a) Backtracking algorithm (pseudocode)
+To check whether the word “DREAM” can be formed in a 4×4 grid, we use a backtracking approach because:
+We have multiple choices at each step
+Letters can be used only once
+We may need to undo choices if they fail
+State Representation:
+Current cell position (row, col)
+Current index of the word being matched
+A visited matrix to mark used cells
+Choices:
+Move to any of the 8 adjacent cells (horizontal, vertical, diagonal)
+Constraints:
+Cell must be inside the grid
+Cell must not be visited
+Character must match the current letter of the word
+Goal Condition:
+All characters of the word are matched successfully
+Pseudocode:
+function searchWord(grid, word, row, col, index, visited):
+    if index == length of word:
+        return true   // Goal condition
+
+    if row < 0 or col < 0 or row >= 4 or col >= 4:
+        return false
+    if visited[row][col] == true:
+        return false
+    if grid[row][col] != word[index]:
+        return false
+
+    mark visited[row][col] = true
+
+    for each direction in 8 possible directions:
+        if searchWord(grid, word, newRow, newCol, index + 1, visited):
+            return true
+
+    mark visited[row][col] = false   
+    return false
+
+b) Decision tree for finding “DREAM”
+Grid:
+C  A  T  S
+O  R  E  A
+D  E  A  M
+E  L  L  S
+
+Path to form “DREAM”:
+D (2,0)
+R (1,1)
+E (2,1)
+A (2,2)
+M (2,3) SUCCESS
+
+Decision Tree (simplified):
+Start at D
+ ├─ Try wrong neighbors → backtrack
+ └─ R
+    └─ E
+       └─ A
+          └─ M → SUCCESS
+Wrong paths are abandoned early.
+Backtracking happens when a character does not match.
+
+c) Execution trace with backtracking
+Start search for D
+Found at position (2,0)
+Move to neighbors to find R
+(1,1) matches → move forward
+Look for E
+(2,1) matches → move forward
+Look for A
+(2,2) matches → move forward
+Look for M
+(2,3) matches → word completed
+Function returns true
+No further backtracking needed since solution is found
+If at any step:
+No neighbor matches the next character
+the algorithm unmarks visited cell and backtracks.
+
+d) Worst-case time complexity
+Let:
+Grid size = N × M
+Word length = L
+Time Complexity:
+O(N × M × 8^L)
+
+Explanation:
+We may start from every cell in the grid → N × M
+From each cell, we explore up to 8 directions.
+Maximum depth of recursion = word length L
+Therefore, worst-case complexity is exponential.
+
+e) Finding ALL possible ways to form the word
+To find all possible paths, we modify the algorithm as follows:
+Do not return immediatey after finding one solution.
+Store every valid path found .
+Additional Data Structure:
+A list of paths (each path stores cell coordinates)
+Modified Idea:
+if index == length of word:
+    store current path
+    return
+
+Explanation:
+The algorithm explores all valid combinations.
+Backtracking ensures all paths are checked.
+This is useful for game design and scoring systems.
+
+Problem 3: N-Queens Optimization and Variants
+a) Search space analysis for the 8-Queens problem
+1. Brute force search space (no optimization)
+In brute force, we try to place a queen in any square of the 8×8 board.
+Total squares = 64
+We must choose 8 squares for 8 queens
+So the search space is approximately:
+64^8
+This is extremely large and impractical to compute because it allows:
+Multiple queens in the same row
+Multiple queens in the same column
+Invalid diagonal attacks
+
+2. Search space with “one queen per row” constraint
+If we place exactly one queen per row, then:
+For each row, we choose 1 column out of 8
+Search space becomes:
+8 × 8 × 8 × 8 × 8 × 8 × 8 × 8 = 8^8 = 16,777,216
+This is much smaller than 64^8, but still large.
+
+3. Estimated positions explored using backtracking
+With backtracking:
+Invalid placements are rejected early
+Column and diagonal conflicts prune the tree
+In practice, for the 8-Queens problem, backtracking explores only a few thousand states (roughly 2,000–10,000), not millions.
+This happens because:
+Many branches fail at early rows
+Constraints significantly reduce choices
+
+b) Optimized N-Queens solution using 1D array and diagonals
+Idea:
+Use a 1D array where board[row] = column
+Track attacked columns and diagonals using boolean arrays
+Data Structures:
+board[N] → stores queen positions
+col[N] → tracks used columns
+diag1[2N] → main diagonals (row − col)
+diag2[2N] → anti-diagonals (row + col)
+
+Pseudocode:
+function solve(row):
+    if row == N:
+        print solution
+        return true
+    for colIndex from 0 to N-1:
+        if col[colIndex] == false
+           and diag1[row - colIndex + N] == false
+           and diag2[row + colIndex] == false:
+            board[row] = colIndex
+            col[colIndex] = true
+            diag1[row - colIndex + N] = true
+            diag2[row + colIndex] = true
+            if solve(row + 1):
+                return true
+            col[colIndex] = false
+            diag1[row - colIndex + N] = false
+            diag2[row + colIndex] = false
+
+    return false
+
+Improvement over basic solution:
+No need to scan the board each time
+Conflict checking is O(1)
+Much faster and memory-efficient
+
+c) Tracing optimized solution for N = 4
+Step-by-step execution:
+Row 0:
+board = [1, -, -, -]
+col = [false, true, false, false]
+Row 1:
+Try col 3 → valid
+board = [1, 3, -, -]
+Row 2:
+All columns cause conflict 
+Backtrack from row 1
+Row 1 (next choice):
+Try col 0 → valid
+board = [1, 0, -, -]
+Row 2:
+Try col 2 → valid
+board = [1, 0, 2, -]
+Row 3:
+No valid column 
+Backtrack from row 2
+Continue:
+Eventually finds:
+board = [1, 3, 0, 2]
+First valid solution found 
+Backtracking occurs whenever:
+No safe column exists in a row
+
+d) Finding only ONE solution as fast as possible
+To stop after the first solution:
+Modifications:
+Return true immediately when a solution is found
+Do not continue searching other branches
+Key change:
+if solve(row + 1):
+    return true
+Benefit:
+Saves time
+Useful for teaching demos or real-time applications
+
+e) N-Queens with Forbidden Squares
+Modification:
+Maintain a forbidden[row][col] matrix
+Before placing a queen, check:
+if forbidden[row][col] == true:
+    skip this position
+
+Impact on complexity:
+Search space becomes smaller.
+More pruning occurs.
+Worst-case complexity remains exponential.
+Performance depends on number and placement of forbidden squares.
+
